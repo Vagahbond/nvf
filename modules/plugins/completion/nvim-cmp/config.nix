@@ -61,15 +61,19 @@ in {
       (mkSetLuaBinding mappings.complete ''
         require('cmp').complete
       '')
-      (mkSetLuaBinding mappings.confirm ''
-        function()
-          if not require('cmp').confirm({ select = true }) then
-            local termcode = vim.api.nvim_replace_termcodes(${toJSON mappings.confirm.value}, true, false, true)
-
-            vim.fn.feedkeys(termcode, 'n')
+      (let
+        defaultKeys =
+          if config.vim.autopairs.enable
+          then "require('nvim-autopairs').autopairs_cr()"
+          else "vim.api.nvim_replace_termcodes(${toJSON mappings.confirm.value}, true, false, true)";
+      in
+        mkSetLuaBinding mappings.confirm ''
+          function()
+            if not require('cmp').confirm({ select = true }) then
+              vim.fn.feedkeys(${defaultKeys}, 'n')
+            end
           end
-        end
-      '')
+        '')
       (mkSetLuaBinding mappings.next ''
         function()
           local has_words_before = function()
@@ -182,7 +186,7 @@ in {
 
     # TODO: alternative snippet engines to vsnip
     # https://github.com/hrsh7th/nvim-cmp/blob/main/doc/cmp.txt#L82
-    vim.luaConfigRC.completion = mkIf (cfg.type == "nvim-cmp") (dagPlacement ''
+    vim.pluginRC.completion = mkIf (cfg.type == "nvim-cmp") (dagPlacement ''
       local nvim_cmp_menu_map = function(entry, vim_item)
         -- name for each source
         vim_item.menu = ({

@@ -4,49 +4,24 @@
   ...
 }: let
   inherit (lib.modules) mkIf mkMerge;
-  inherit (lib.strings) optionalString;
   inherit (lib.trivial) boolToString;
   inherit (lib.nvim.binds) mkBinding;
   inherit (lib.nvim.dag) entryAnywhere;
+  inherit (lib.nvim.lua) toLuaObject;
 
   cfg = config.vim.visuals;
 in {
   config = mkIf cfg.enable (mkMerge [
     (mkIf cfg.indentBlankline.enable {
       vim.startPlugins = ["indent-blankline"];
-      vim.luaConfigRC.indent-blankline = entryAnywhere ''
-        -- highlight error: https://github.com/lukas-reineke/indent-blankline.nvim/issues/59
-        -- vim.wo.colorcolumn = "99999"
-        vim.opt.list = true
-
-        ${optionalString (cfg.indentBlankline.eolChar != null) ''
-          vim.opt.listchars:append({ eol = "${cfg.indentBlankline.eolChar}" })
-        ''}
-        ${optionalString (cfg.indentBlankline.fillChar != null) ''
-          vim.opt.listchars:append({ space = "${cfg.indentBlankline.fillChar}" })
-        ''}
-
-        require("ibl").setup {
-          enabled = true,
-          debounce = ${toString cfg.indentBlankline.debounce},
-          indent = { char = "${cfg.indentBlankline.indent.char}" },
-
-          viewport_buffer = {
-            min = ${toString cfg.indentBlankline.viewportBuffer.min},
-            max = ${toString cfg.indentBlankline.viewportBuffer.max},
-          },
-
-          scope = {
-            enabled = ${boolToString cfg.indentBlankline.scope.enabled},
-            show_end = ${boolToString cfg.indentBlankline.scope.showEndOfLine}
-          },
-        }
+      vim.pluginRC.indent-blankline = entryAnywhere ''
+        require("ibl").setup(${toLuaObject cfg.indentBlankline.setupOpts})
       '';
     })
 
     (mkIf cfg.cursorline.enable {
       vim.startPlugins = ["nvim-cursorline"];
-      vim.luaConfigRC.cursorline = entryAnywhere ''
+      vim.pluginRC.cursorline = entryAnywhere ''
         require('nvim-cursorline').setup {
           cursorline = {
             timeout = ${toString cfg.cursorline.lineTimeout},
@@ -62,7 +37,7 @@ in {
 
     (mkIf cfg.scrollBar.enable {
       vim.startPlugins = ["scrollbar-nvim"];
-      vim.luaConfigRC.scrollBar = entryAnywhere ''
+      vim.pluginRC.scrollBar = entryAnywhere ''
         require('scrollbar').setup{
             excluded_filetypes = {
               'prompt',
@@ -81,7 +56,7 @@ in {
 
     (mkIf cfg.smoothScroll.enable {
       vim.startPlugins = ["cinnamon-nvim"];
-      vim.luaConfigRC.smoothScroll = entryAnywhere ''
+      vim.pluginRC.smoothScroll = entryAnywhere ''
         require('cinnamon').setup()
       '';
     })
@@ -91,7 +66,7 @@ in {
 
       vim.maps.normal = mkBinding cfg.cellularAutomaton.mappings.makeItRain "<cmd>CellularAutomaton make_it_rain<CR>" "Make it rain";
 
-      vim.luaConfigRC.cellularAUtomaton = entryAnywhere ''
+      vim.pluginRC.cellularAUtomaton = entryAnywhere ''
         local config = {
               fps = 50,
               name = 'slide',
@@ -119,7 +94,7 @@ in {
 
     (mkIf cfg.highlight-undo.enable {
       vim.startPlugins = ["highlight-undo"];
-      vim.luaConfigRC.highlight-undo = entryAnywhere ''
+      vim.pluginRC.highlight-undo = entryAnywhere ''
         require('highlight-undo').setup({
           duration = ${toString cfg.highlight-undo.duration},
           highlight_for_count = ${boolToString cfg.highlight-undo.highlightForCount},

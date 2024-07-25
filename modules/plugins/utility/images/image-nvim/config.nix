@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }: let
   inherit (lib.modules) mkIf;
@@ -20,7 +19,7 @@ in {
         "magick"
       ];
 
-      luaConfigRC.image-nvim = entryAnywhere ''
+      pluginRC.image-nvim = entryAnywhere ''
         require("image").setup(
           ${toLuaObject cfg.setupOpts}
         )

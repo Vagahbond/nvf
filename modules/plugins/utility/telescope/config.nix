@@ -16,7 +16,7 @@
 
   mappings = addDescriptionsToMappings cfg.mappings mappingDefinitions;
 in {
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     vim.startPlugins = [
       "telescope"
       "plenary-nvim"
@@ -65,7 +65,7 @@ in {
       "<leader>fvc" = "Commits";
     };
 
-    vim.luaConfigRC.telescope = entryAnywhere ''
+    vim.pluginRC.telescope = entryAnywhere ''
       local telescope = require('telescope')
       telescope.setup(${toLuaObject cfg.setupOpts})
 

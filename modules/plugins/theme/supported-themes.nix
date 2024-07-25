@@ -6,10 +6,7 @@
   inherit (lib.trivial) boolToString warnIf;
 in {
   onedark = {
-    setup = {
-      style ? "dark",
-      transparent,
-    }: ''
+    setup = {style ? "dark"}: ''
       -- OneDark theme
       require('onedark').setup {
         style = "${style}"
@@ -33,10 +30,7 @@ in {
   };
 
   dracula = {
-    setup = {
-      style ? null,
-      transparent,
-    }: ''
+    setup = {transparent}: ''
       require('dracula').setup({
         transparent_bg = ${boolToString transparent},
       });
@@ -53,6 +47,7 @@ in {
       require('catppuccin').setup {
         flavour = "${style}",
         transparent_background = ${boolToString transparent},
+        term_colors = true,
         integrations = {
       	  nvimtree = {
       		  enabled = true,
@@ -101,7 +96,7 @@ in {
         vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
         vim.api.nvim_set_hl(0, "LineNr", { bg = "none" })
         vim.api.nvim_set_hl(0, "SignColumn", { bg = "none" })
-        ${lib.optionalString config.vim.filetree.nvimTree.enable ''
+        ${optionalString config.vim.filetree.nvimTree.enable ''
           vim.api.nvim_set_hl(0, "NvimTreeNormal", { bg = "none" })
         ''}
       ''}

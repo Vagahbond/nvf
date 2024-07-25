@@ -21,10 +21,7 @@ in {
           "<leader>o" = "+Notes";
         };
 
-        luaConfigRC.orgmode = entryAnywhere ''
-          -- Load custom treesitter grammar for org filetype
-          require('orgmode').setup_ts_grammar()
-
+        pluginRC.orgmode = entryAnywhere ''
           -- Treesitter configuration
           require('nvim-treesitter.configs').setup {
 

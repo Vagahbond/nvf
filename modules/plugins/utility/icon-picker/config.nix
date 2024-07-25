@@ -8,13 +8,13 @@
 
   cfg = config.vim.utility.icon-picker;
 in {
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     vim.startPlugins = [
       "icon-picker-nvim"
       "dressing-nvim"
     ];
 
-    vim.luaConfigRC.icon-picker = entryAnywhere ''
+    vim.pluginRC.icon-picker = entryAnywhere ''
       require("icon-picker").setup({
         disable_legacy_commands = true
       })

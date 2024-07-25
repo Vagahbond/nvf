@@ -9,17 +9,18 @@
   inherit (lib.modules) mkIf mkMerge;
   inherit (lib.lists) isList;
   inherit (lib.meta) getExe;
-  inherit (lib.types) enum either listOf package str;
-  inherit (lib.nvim.lua) expToLua;
-  inherit (lib.nvim.types) mkGrammarOption diagnostics;
+  inherit (lib.types) enum either listOf package str bool;
+  inherit (lib.nvim.lua) expToLua toLuaObject;
+  inherit (lib.nvim.types) mkGrammarOption diagnostics mkPluginSetupOption;
   inherit (lib.nvim.languages) diagnosticsToLua;
+  inherit (lib.nvim.dag) entryAnywhere;
 
   cfg = config.vim.languages.ts;
 
   defaultServer = "tsserver";
   servers = {
     tsserver = {
-      package = pkgs.nodePackages.typescript-language-server;
+      package = pkgs.typescript-language-server;
       lspConfig = ''
         lspconfig.tsserver.setup {
           capabilities = capabilities;
@@ -32,6 +33,7 @@
         }
       '';
     };
+
     denols = {
       package = pkgs.deno;
       lspConfig = ''
@@ -80,7 +82,7 @@
   defaultDiagnosticsProvider = ["eslint_d"];
   diagnosticsProviders = {
     eslint_d = {
-      package = pkgs.nodePackages.eslint_d;
+      package = pkgs.eslint_d;
       nullConfig = pkg: ''
         table.insert(
           ls_sources,
@@ -143,6 +145,24 @@ in {
         inherit defaultDiagnosticsProvider;
       };
     };
+
+    extensions = {
+      ts-error-translator = {
+        enable = mkEnableOption ''
+          Typescript error translation with
+          [ts-error-translator.nvim](github.com/dmmulroy/ts-error-translator.nvim)
+        '';
+
+        setupOpts = mkPluginSetupOption "ts-error-translator" {
+          # This is the default configuration behaviour.
+          auto_override_publish_diagnostics = mkOption {
+            description = "Automatically override the publish_diagnostics handler";
+            type = bool;
+            default = true;
+          };
+        };
+      };
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -168,6 +188,13 @@ in {
         config = cfg.extraDiagnostics.types;
         inherit diagnosticsProviders;
       };
+    })
+
+    (mkIf cfg.extensions."ts-error-translator".enable {
+      vim.startPlugins = ["ts-error-translator"];
+      vim.pluginRC.ts-error-translator = entryAnywhere ''
+        require("ts-error-translator").setup(${toLuaObject cfg.extensions.ts-error-translator.setupOpts})
+      '';
     })
   ]);
 }

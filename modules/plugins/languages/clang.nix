@@ -12,7 +12,7 @@
   inherit (lib.modules) mkIf mkMerge;
   inherit (lib.nvim.lua) expToLua;
   inherit (lib.nvim.types) mkGrammarOption;
-  inherit (lib.nvim.dag) entryAnywhere;
+  inherit (lib.nvim.dag) entryAfter;
 
   packageToCmd = package: defaultCmd:
     if isList cfg.lsp.package
@@ -21,7 +21,7 @@
 
   cfg = config.vim.languages.clang;
 
-  defaultServer = "ccls";
+  defaultServer = "clangd";
   servers = {
     ccls = {
       package = pkgs.ccls;
@@ -35,7 +35,7 @@
       '';
     };
     clangd = {
-      package = pkgs.clang-tools_16;
+      package = pkgs.clang-tools;
       lspConfig = ''
         local clangd_cap = capabilities
         -- use same offsetEncoding as null-ls
@@ -141,7 +141,7 @@ in {
 
   config = mkIf cfg.enable (mkMerge [
     (mkIf cfg.cHeader {
-      vim.configRC.c-header = entryAnywhere "let g:c_syntax_for_h = 1";
+      vim.pluginRC.c-header = entryAfter ["basic"] "vim.g.c_syntax_for_h = 1";
     })
 
     (mkIf cfg.treesitter.enable {

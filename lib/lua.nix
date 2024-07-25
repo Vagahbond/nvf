@@ -2,19 +2,9 @@
 {lib}: let
   inherit (builtins) hasAttr head throw typeOf isList isAttrs isBool isInt isString isPath isFloat toJSON;
   inherit (lib.attrsets) mapAttrsToList filterAttrs;
-  inherit (lib.strings) concatStringsSep concatMapStringsSep stringToCharacters;
+  inherit (lib.strings) concatStringsSep concatMapStringsSep stringToCharacters concatLines;
   inherit (lib.trivial) boolToString warn;
 in rec {
-  wrapLuaConfig = {
-    luaBefore ? "",
-    luaConfig,
-    luaAfter ? "",
-  }: ''
-    lua << EOF
-    ${concatStringsSep "\n" [luaBefore luaConfig luaAfter]}
-    EOF
-  '';
-
   # Convert a null value to lua's nil
   nullString = value:
     if value == null

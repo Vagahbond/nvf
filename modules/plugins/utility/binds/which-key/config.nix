@@ -10,10 +10,10 @@
 
   cfg = config.vim.binds.whichKey;
 in {
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     vim.startPlugins = ["which-key"];
 
-    vim.luaConfigRC.whichkey = entryAnywhere ''
+    vim.pluginRC.whichkey = entryAnywhere ''
       local wk = require("which-key")
       wk.setup ({
         key_labels = {
@@ -23,7 +23,7 @@ in {
           ["<tab>"] = "TAB",
         },
 
-        ${optionalString (config.vim.ui.borders.plugins.which-key.enable) ''
+        ${optionalString config.vim.ui.borders.plugins.which-key.enable ''
         window = {
           border = "${config.vim.ui.borders.plugins.which-key.style}",
         },

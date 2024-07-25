@@ -5,7 +5,7 @@
 }: let
   inherit (lib.options) mkOption;
   inherit (lib.attrsets) attrNames mapAttrs' filterAttrs nameValuePair;
-  inherit (lib.strings) hasPrefix removePrefix isString;
+  inherit (lib.strings) hasPrefix removePrefix;
   inherit (lib.types) submodule either package enum str lines attrsOf anything listOf nullOr;
 
   # Get the names of all flake inputs that start with the given prefix.
@@ -52,7 +52,7 @@
     };
   };
 in {
-  inherit extraPluginType fromInputs;
+  inherit extraPluginType fromInputs pluginType;
 
   pluginsOpt = {
     description,

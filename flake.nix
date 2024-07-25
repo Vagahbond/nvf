@@ -1,19 +1,22 @@
 {
   description = "A neovim flake with a modular configuration";
   outputs = {
-    nixpkgs,
     flake-parts,
     self,
     ...
-  } @ inputs:
-    flake-parts.lib.mkFlake {inherit inputs;} {
+  } @ inputs: let
+    # call the extedended library with `inputs`
+    # inputs is used to get the original standard library, and to pass inputs to the plugin autodiscovery function
+    lib = import ./lib/stdlib-extended.nix inputs;
+  in
+    flake-parts.lib.mkFlake {
+      inherit inputs;
+      specialArgs = {inherit lib;};
+    } {
       # provide overridable systems
       # https://github.com/nix-systems/nix-systems
       systems = import inputs.systems;
-
       imports = [
-        # add lib to module args
-        {_module.args = {inherit (nixpkgs) lib;};}
         ./flake/apps.nix
         ./flake/legacyPackages.nix
         ./flake/overlays.nix
@@ -22,36 +25,32 @@
 
       flake = {
         lib = {
-          inherit (import ./lib/stdlib-extended.nix nixpkgs.lib inputs) nvim;
-          inherit (import ./configuration.nix inputs) neovimConfiguration;
+          inherit (lib) nvim;
+          inherit (lib.nvim) neovimConfiguration;
         };
 
         homeManagerModules = {
           neovim-flake =
-            nixpkgs.lib.warn ''
+            lib.warn ''
               homeManagerModules.neovim-flake has been deprecated.
-              Plese use the homeManagereModules.nvf instead
+              Plese use the homeManagerModules.nvf instead
             ''
             self.homeManagerModules.nvf;
 
-          nvf = {
-            imports = [(import ./flake/modules/home-manager.nix self.packages inputs)];
-          };
+          nvf = import ./flake/modules/home-manager.nix self.packages lib;
 
           default = self.homeManagerModules.nvf;
         };
 
         nixosModules = {
           neovim-flake =
-            nixpkgs.lib.warn ''
+            lib.warn ''
               nixosModules.neovim-flake has been deprecated.
               Please use the nixosModules.nvf instead
             ''
             self.nixosModules.nvf;
 
-          nvf = {
-            imports = [(import ./flake/modules/nixos.nix self.packages inputs)];
-          };
+          nvf = import ./flake/modules/nixos.nix self.packages lib;
 
           default = self.nixosModules.nvf;
         };
@@ -66,9 +65,9 @@
         formatter = pkgs.alejandra;
         devShells = {
           default = self'.devShells.lsp;
-          nvim-nix = pkgs.mkShell {nativeBuildInputs = [config.packages.nix];};
+          nvim-nix = pkgs.mkShell {packages = [config.packages.nix];};
           lsp = pkgs.mkShell {
-            nativeBuildInputs = with pkgs; [nil statix deadnix alejandra];
+            packages = with pkgs; [nil statix deadnix alejandra];
           };
         };
       };
@@ -77,10 +76,13 @@
   # Flake inputs
   inputs = {
     ## Basic Inputs
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-utils.url = "github:numtide/flake-utils";
     systems.url = "github:nix-systems/default";
+
+    # Alternate neovim-wrapper
+    mnw.url = "github:Gerg-L/mnw";
 
     # For generating documentation website
     nmd = {
@@ -163,8 +165,8 @@
       flake = false;
     };
 
-    plugin-rust-tools = {
-      url = "github:simrat39/rust-tools.nvim";
+    plugin-rustaceanvim = {
+      url = "github:mrcjkb/rustaceanvim";
       flake = false;
     };
 
@@ -180,6 +182,11 @@
 
     plugin-elixir-tools = {
       url = "github:elixir-tools/elixir-tools.nvim";
+      flake = false;
+    };
+
+    plugin-ts-error-translator = {
+      url = "github:dmmulroy/ts-error-translator.nvim";
       flake = false;
     };
 
@@ -211,9 +218,19 @@
       flake = false;
     };
 
+    plugin-nvim-dap-go = {
+      url = "github:leoluz/nvim-dap-go";
+      flake = false;
+    };
+
     # Filetrees
     plugin-nvim-tree-lua = {
       url = "github:nvim-tree/nvim-tree.lua";
+      flake = false;
+    };
+
+    plugin-neo-tree-nvim = {
+      url = "github:nvim-neo-tree/neo-tree.nvim";
       flake = false;
     };
 

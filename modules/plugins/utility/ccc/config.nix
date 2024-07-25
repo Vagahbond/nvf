@@ -8,12 +8,12 @@
 
   cfg = config.vim.utility.ccc;
 in {
-  config = mkIf (cfg.enable) {
+  config = mkIf cfg.enable {
     vim.startPlugins = [
       "ccc"
     ];
 
-    vim.luaConfigRC.ccc = entryAnywhere ''
+    vim.pluginRC.ccc = entryAnywhere ''
       local ccc = require("ccc")
       ccc.setup {
       	highlighter = {
